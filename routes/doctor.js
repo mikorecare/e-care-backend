@@ -74,6 +74,36 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 });
 
+router.put('/', upload.single('image'), async (req, res) => {
+  const { name, specialization, departments, _id } = req.body;
+  console.log(req.body);
+  try {
+    const doctor = await Doctor.findById(_id);
+    if (!doctor) {
+      return res.status(404).json({ error: 'Department not found' });
+    }
+
+    if (name) doctor.name = name;
+    if (departments) doctor.departments = departments;
+    if (specialization) doctor.specialization = specialization;
+
+    if (req.file) {
+      doctor.image = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        path: req.file.path,
+        size: req.file.size,
+      };
+    }
+
+    const updateDoctor = await doctor.save();
+    res.json(updateDoctor);
+  } catch (error) {
+    console.error('Error updating department:', error);
+    res.status(500).json({ error: 'Failed to update department' });
+  }
+});
 
 // READ: Get all doctors
 router.get('/', async (req, res) => {
@@ -83,6 +113,19 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving doctors:', error);
     res.status(500).json({ error: 'Failed to retrieve doctors' });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const doctor = await Doctor.findById(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ error: 'Department not found' });
+    }
+    res.json(doctor);
+  } catch (error) {
+    console.error('Error retrieving department:', error);
+    res.status(500).json({ error: 'Failed to retrieve department' });
   }
 });
 
